@@ -52,3 +52,7 @@ def generate_trials(subj_code, prop_incongruent, num_trials=100):
         f.write(separator.join(trial_data)+'\n') #notice the newline
 
     f.close()
+    
+if __name__ == "__main__":
+    generate_trials("test_subj_50",.50)
+    generate_trials("test_subj_75",.75)
