@@ -110,4 +110,4 @@ for cur_trial_num,cur_trial in enumerate(trial_list):
 
     write_data(data_file, trial_data)
 
-trial_data.close()
+data_file.close()
