@@ -1,22 +1,36 @@
-from psychopy import voicekey
-import speech_recognition as sr
-import time
+# MJP - Written for Psych750 Fall 2023
+import sounddevice as sd
+import wavio
+import whisper
+import numpy as np
+from scipy.io import wavfile as wav  # needed to read .wav files for the new toolkit
+from calculate_voice_onset import auto_utterance_times
 
-record_length = 5 # Change the legnth of the recording here
-voicekey.pyo_init(rate = 48000,buffersize=256) # Initialize some parameters
-# Capture some audio
-onset = voicekey.OnsetVoiceKey(sec = record_length, file_out='audio_file.wav',baseline = 10) # Check for voice onset
-try: # This try except is needed for the baseline argument in the voice onset check
-    onset.start()
-except AttributeError:
-    pass
-time.sleep(record_length+2) # pause for a few seconds to make sure everything is captured
-AUDIO_FILE = 'audio_file.wav'
-r = sr.Recognizer() # Initialize the speech recognizer
-with sr.AudioFile(AUDIO_FILE) as source:
-    audio = r.record(source) # Record the audio from microphone
+'''
+Uses OpenAI Whisper Toolbox to transcribe spoken English.
 
-# Audio onset
-RT = onset.event_onset
-# Use Google Speech Recognition to transcribe the audio
-word_said = r.recognize_google(audio)
+It detects the onset time (RT) of the speech using the new toolkit.
+Output of RT and transcription will be printed on command line.
+'''
+
+# Initialize recording parameters
+RATE = 44100
+CHANNELS = 1
+DTYPE = 'int16'
+FILENAME = "recording.wav"
+SECONDS = 2.5
+
+# Load whisper model
+model = whisper.load_model("base")
+
+print("starting to record")
+audio_data = sd.rec(int(SECONDS * RATE), samplerate=RATE, channels=CHANNELS, dtype=DTYPE, blocking=True)
+print("ended recording after ", SECONDS, " seconds")
+wavio.write(FILENAME, audio_data, RATE, sampwidth=2)
+
+fs, signal = wav.read(FILENAME)
+idx, rt_milliseconds = auto_utterance_times(signal, fs)
+rt_seconds = rt_milliseconds / 1000  # Convert from ms to s
+print(f"Detected speech onset at: {rt_seconds:.3f} seconds")
+result = model.transcribe(FILENAME)
+print(f"Transcription: {result['text']}")
