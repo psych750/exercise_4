@@ -18,6 +18,11 @@ def open_data_file(filename):
         return False
     else:
         try:
+            os.mkdir('data')
+            print('Data directory did not exist. Created data/')
+        except FileExistsError:
+            pass
+        try:
             data_file = open(filename,'w')
         except FileNotFoundError:
             print(f'Could not open {filename} for writing')
@@ -124,7 +129,7 @@ for cur_trial_num,cur_trial in enumerate(trial_list):
     
     try: #think about what this does and why it works. 
         resp = key_pressed[0]
-    except IndexError:
+    except TypeError:
         resp = "NA"
         RT = "NA"
 
